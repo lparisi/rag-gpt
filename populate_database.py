@@ -1,11 +1,14 @@
 import argparse
 import os
 import shutil
+from typing import List
+
 from langchain.document_loaders.pdf import PyPDFDirectoryLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
-from get_embedding_function import get_embedding_function
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.vectorstores.chroma import Chroma
+
+from get_embedding_function import get_embedding_function
 
 
 CHROMA_PATH = "chroma"
@@ -28,12 +31,28 @@ def main():
     add_to_chroma(chunks)
 
 
-def load_documents():
+def load_documents() -> list[Document]:
+    """
+    Load documents from a specified directory.
+
+    Returns:
+        list: A list of loaded documents.
+    """
     document_loader = PyPDFDirectoryLoader(DATA_PATH)
     return document_loader.load()
 
 
-def split_documents(documents: list[Document]):
+def split_documents(documents: List[Document]) -> List[Document]:
+    """
+    Splits a list of documents into smaller chunks using a text splitter.
+
+    Args:
+        documents (list[Document]): The list of documents to be split.
+
+    Returns:
+        List of split documents.
+
+    """
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
         chunk_overlap=80,
@@ -43,7 +62,16 @@ def split_documents(documents: list[Document]):
     return text_splitter.split_documents(documents)
 
 
-def add_to_chroma(chunks: list[Document]):
+def add_to_chroma(chunks: list[Document])-> None:
+    """
+    Adds new documents to the Chroma database.
+
+    Args:
+        chunks (list[Document]): A list of Document objects representing the new documents to be added.
+
+    Returns:
+        None
+    """
     # Load the existing database.
     db = Chroma(
         persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
@@ -59,9 +87,8 @@ def add_to_chroma(chunks: list[Document]):
 
     # Only add documents that don't exist in the DB.
     new_chunks = []
-    for chunk in chunks_with_ids:
-        if chunk.metadata["id"] not in existing_ids:
-            new_chunks.append(chunk)
+
+    new_chunks = (chunk for chunk in chunks_with_ids if chunk.metadata["id"] not in existing_ids)
 
     if len(new_chunks):
         print(f"👉 Adding new documents: {len(new_chunks)}")
@@ -72,7 +99,16 @@ def add_to_chroma(chunks: list[Document]):
         print("✅ No new documents to add")
 
 
-def calculate_chunk_ids(chunks):
+def calculate_chunk_ids(chunks: list[Document])-> list[Document]:
+    """
+    Calculate unique IDs for each chunk in a list of chunks.
+
+    Args:
+        chunks (list): A list of chunks.
+
+    Returns:
+        list: A list of chunks with unique IDs assigned to each chunk.
+    """
 
     # This will create IDs like "data/monopoly.pdf:6:2"
     # Page Source : Page Number : Chunk Index
@@ -101,7 +137,23 @@ def calculate_chunk_ids(chunks):
     return chunks
 
 
-def clear_database():
+def generate_chunk_id(source: str, 
+                      page: int, 
+                      index: int
+    ) -> str:
+    """
+    Generate a unique ID for a chunk.
+
+    Returns:
+        str: A unique ID.
+    """
+    return f"{source}:{page}:{index}"
+def clear_database() -> None:
+    """
+    Clears the database by removing the CHROMA_PATH directory if it exists.
+
+    This function deletes the CHROMA_PATH directory and all its contents if it exists.
+    """
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
 
