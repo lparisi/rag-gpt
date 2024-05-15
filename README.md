@@ -1,22 +1,28 @@
-## Running Ollama and Chromadb
+# LLM RAG Assignment
+## Running
 
-To further enhance your development process and focus on the core functionalities of the assignment, you can run Ollama and Chromadb. These tools provide additional features and optimizations.
 
 1. Install Ollama by following the instructions in the [Ollama documentation](https://ollama.readthedocs.io/en/latest/installation.html).
 
+2. Run Ollama with the following commands
+`ollama run "phi3:latest` for the LLM model
+`ollama run "nomic-embed-text"`for the embeddings model
 2. Install Chromadb by following the instructions in the [Chromadb documentation](https://chromadb.readthedocs.io/en/latest/installation.html).
 
 3. Once Ollama and Chromadb are installed, you can use the following commands to run the project:
 
     - To populate the database using Ollama:<br>
-    `docker run -p 11434:11434 -it --rm rag-demo python populate_database.py --use-ollama`
+    `python populate_database.py`
 
-    - To query the database using Ollama: <br>
-    `docker run -p 11434:11434 -it --rm rag-demo python query_data.py --use-ollama "{query}"`
+    - To query the database using Ollama: <br><br>
+    `python query_data.py "What are the latest Credit challenges for Amazon currently?"`
+    
 
-    - To reset the database using Ollama: <br>
-    `docker run -p 80:80 -it --rm rag-demo python populate_database.py --reset --use-ollama`
-
-    Note: Make sure to replace `{query}` with your actual query.
+    - To reset the database<br>
+    `python populate_database.py --reset`
+---
+>Additional Notes:
+    - Embedding Model: The current embedding model being used is `nomic-embed-text`. You can utilize the `get_embedding_function.py` script to select different embedding models such as AWS Bedrock, Hugging Face, or OpenAI. The quality of the embeddings directly impacts the retrieval accuracy. <br>
+    - Vector Store: Chroma is being utilized as the vector store for local development due to time constraints. However, any other vector store supported by Langchain community can be used.
 
 

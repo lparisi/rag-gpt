@@ -1,13 +1,17 @@
 from langchain_community.embeddings.ollama import OllamaEmbeddings
-from langchain_community.embeddings.bedrock import BedrockEmbeddings
 
+def get_embedding_function(local: bool) -> OllamaEmbeddings:
+    """
+    Returns an embedding function based on the specified configuration.
 
-def get_embedding_function(local: bool = True):
-    
-    if local is False:
-        embeddings = BedrockEmbeddings(
-            credentials_profile_name="default", region_name="us-east-1"
-        )
-    else:
-        embeddings = OllamaEmbeddings(model="nomic-embed-text")
+    Parameters:
+        local (bool): Flag indicating whether to use local or remote embeddings.
+            If True, local embeddings will be used. If False, remote embeddings
+            will be used.
+
+    Returns:
+        OllamaEmbeddings: An instance of the embedding function based on the specified
+            configuration.
+    """
+    embeddings = OllamaEmbeddings(model="nomic-embed-text")
     return embeddings

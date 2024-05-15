@@ -1,3 +1,7 @@
+"""
+This Python script is used to populate a Chroma database with documents loaded from a specified directory. 
+The documents are split into smaller chunks and each chunk is added to the database with a unique ID.
+"""
 import argparse
 import os
 import shutil
@@ -18,7 +22,13 @@ DATA_PATH = "data"
 
 
 def main():
-
+    """
+    Entry point of the script.
+    
+    This function checks if the database should be cleared using the `--reset` flag. If the flag is provided,
+    it clears the database by calling the `clear_database` function. Then, it creates or updates the data store
+    by loading documents, splitting them into chunks, and adding them to the chroma.
+    """
     # Check if the database should be cleared (using the --clear flag).
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
