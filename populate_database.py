@@ -1,15 +1,17 @@
 import argparse
 import os
 import shutil
+
 from typing import List
 
-from langchain.document_loaders.pdf import PyPDFDirectoryLoader
+from tqdm import tqdm
+
+from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain_community.vectorstores.chroma import Chroma
 from langchain.schema.document import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.vectorstores.chroma import Chroma
 
 from get_embedding_function import get_embedding_function
-
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
@@ -88,13 +90,14 @@ def add_to_chroma(chunks: list[Document])-> None:
     # Only add documents that don't exist in the DB.
     new_chunks = []
 
-    new_chunks = (chunk for chunk in chunks_with_ids if chunk.metadata["id"] not in existing_ids)
+    new_chunks = list(chunk for chunk in chunks_with_ids if chunk.metadata["id"] not in existing_ids)
 
     if len(new_chunks):
-        print(f"👉 Adding new documents: {len(new_chunks)}")
+        print(f"👉 Adding new chunks of documents to database: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
-        db.add_documents(new_chunks, ids=new_chunk_ids)
-        db.persist()
+
+        for chunk in tqdm(new_chunks, desc="Adding chunks to database", unit="chunks"):
+            db.add_documents([chunk], ids=[chunk.metadata["id"]])
     else:
         print("✅ No new documents to add")
 
@@ -156,7 +159,6 @@ def clear_database() -> None:
     """
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
-
 
 if __name__ == "__main__":
     main()
